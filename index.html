@@ -1,0 +1,119 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Tint/Shade</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style type="text/css">
+      .palette-text {
+        margin-top: 16px;
+        display: flex;
+      }
+      .palette {
+        display: flex;
+      }
+      .palette-value {
+        font-size: 8px;
+        display: flex;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Tint/Shade</h1>
+      <input type="text" id="hex" />
+      <button id="generate-button">generate</button>
+      <div class="palette-text"></div>
+      <div class="palette"></div>
+      <div class="palette-value"></div>
+    </main>
+    <script type="text/javascript">
+      const paletteSize = "80px";
+
+      const hexToRgb = (hex) => {
+        const match = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+        if (match) {
+          return [
+            parseInt(match[1], 16),
+            parseInt(match[2], 16),
+            parseInt(match[3], 16),
+          ];
+        }
+        return [0, 0, 0];
+      };
+
+      const rgbToHex = (rgb) =>
+        `#${rgb[0].toString(16)}${rgb[1].toString(16)}${rgb[2].toString(16)}`;
+
+      const generateTintColor = (rgb, factor) => {
+        const convert = (v) => Math.round(v + (255 - v) * factor);
+        return rgbToHex([convert(rgb[0]), convert(rgb[1]), convert(rgb[2])]);
+      };
+
+      const generateShadeColor = (rgb, factor) => {
+        const convert = (v) => Math.round(v * (1 - factor));
+        return rgbToHex([convert(rgb[0]), convert(rgb[1]), convert(rgb[2])]);
+      };
+
+      const generateColorPalette = (hex) => {
+        const rgb = hexToRgb(hex);
+
+        return {
+          [50]: generateTintColor(rgb, 0.9),
+          [100]: generateTintColor(rgb, 0.8),
+          [200]: generateTintColor(rgb, 0.6),
+          [300]: generateTintColor(rgb, 0.4),
+          [400]: generateTintColor(rgb, 0.2),
+          [500]: hex,
+          [600]: generateShadeColor(rgb, 0.1),
+          [700]: generateShadeColor(rgb, 0.2),
+          [800]: generateShadeColor(rgb, 0.3),
+          [900]: generateShadeColor(rgb, 0.4),
+        };
+      };
+
+      document.getElementById("generate-button").onclick = () => {
+        const hex = document.getElementById("hex").value;
+        const colorPalette = generateColorPalette(hex);
+
+        const data = Object.entries(colorPalette).map(([key, value]) => ({
+          key,
+          value,
+        }));
+        data.sort((a, b) => a.key - b.key);
+
+        d3.select(".palette-text")
+          .selectAll("div")
+          .data(data)
+          .enter()
+          .append("div")
+          .style("width", paletteSize)
+          .style("display", "flex")
+          .style("justify-content", "center")
+          .text(function (d) {
+            return d.key;
+          });
+        d3.select(".palette")
+          .selectAll("div")
+          .data(data)
+          .enter()
+          .append("div")
+          .style("width", paletteSize)
+          .style("height", paletteSize)
+          .style("background-color", function (d) {
+            return d.value;
+          });
+        d3.select(".palette-value")
+          .selectAll("div")
+          .data(data)
+          .enter()
+          .append("div")
+          .style("width", paletteSize)
+          .style("display", "flex")
+          .style("justify-content", "center")
+          .text(function (d) {
+            return d.value;
+          });
+      };
+    </script>
+  </body>
+</html>
