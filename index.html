@@ -15,6 +15,10 @@
         font-size: 8px;
         display: flex;
       }
+      #palette-json {
+        margin-top: 16px;
+        border: 1px solid #595959;
+      }
     </style>
   </head>
   <body>
@@ -25,6 +29,7 @@
       <div class="palette-text"></div>
       <div class="palette"></div>
       <div class="palette-value"></div>
+      <pre id="palette-json"></pre>
     </main>
     <script type="text/javascript">
       const paletteSize = "80px";
@@ -42,7 +47,9 @@
       };
 
       const rgbToHex = (rgb) =>
-        `#${rgb[0].toString(16)}${rgb[1].toString(16)}${rgb[2].toString(16)}`;
+        `#${rgb[0].toString(16).padStart(2, "0")}${rgb[1]
+          .toString(16)
+          .padStart(2, "0")}${rgb[2].toString(16).padStart(2, "0")}`;
 
       const generateTintColor = (rgb, factor) => {
         const convert = (v) => Math.round(v + (255 - v) * factor);
@@ -81,6 +88,10 @@
         }));
         data.sort((a, b) => a.key - b.key);
 
+        d3.select(".palette-text").selectAll("div").remove();
+        d3.select(".palette").selectAll("div").remove();
+        d3.select(".palette-value").selectAll("div").remove();
+
         d3.select(".palette-text")
           .selectAll("div")
           .data(data)
@@ -113,6 +124,12 @@
           .text(function (d) {
             return d.value;
           });
+
+        document.getElementById("palette-json").textContent = JSON.stringify(
+          colorPalette,
+          null,
+          2
+        );
       };
     </script>
   </body>
